@@ -58,11 +58,17 @@ steps:
 
   - wait
 
-  - label: ":memo: Generate report"
+  - label: ":chart_with_upwards_trend: Generate report"
+    key: report
     command: |
-      echo "Program execution completed for user: $(buildkite-agent meta-data get users-name)" > report.txt
-    artifact_paths:
-      - "report.txt"
+      echo "Generating report..."
+      REPORT_NAME="report_$(date +%s).txt"
+      echo "Program executed successfully for user: $(buildkite-agent meta-data get user-name)" > "$REPORT_NAME"
+      echo "Report contents:"
+      cat "$REPORT_NAME"
+      echo "Uploading report..."
+      buildkite-agent artifact upload "$REPORT_NAME"
+      buildkite-agent meta-data set "report-name" "$REPORT_NAME"
 
   - wait: ~
     continue_on_failure: true
