@@ -1,12 +1,14 @@
 steps:
-  - label: ":mag: List directory contents (on agent)"
+  - label: ":mag: List directory contents"
     command: |
-      echo "Current directory (on agent):"
+      echo "Current directory:"
       pwd
-      echo "Directory contents (on agent):"
+      echo "Directory contents:"
+      ls -la
+      echo "Contents of hello directory:"
       ls -la hello/
 
-  - label: ":docker: Build and upload"
+  - label: ":docker: Build and debug"
     plugins:
       - docker#v3.7.0:
           image: "golang:1.18.0"
@@ -23,14 +25,12 @@ steps:
               ls -la &&
               echo 'Contents of hello directory:' &&
               ls -la hello/ &&
-              echo 'Go environment:' &&
-              go env &&
               echo 'Attempting to build:' &&
               cd hello &&
-              go build -v -o ../hello &&
-              cd .. &&
-              echo 'Build complete, directory contents:' &&
-              ls -la
+              go build -v &&
+              echo 'Contents of hello directory after build:' &&
+              ls -la &&
+              echo 'Build complete'
               ",
             ]
 
@@ -40,8 +40,10 @@ steps:
       pwd
       echo "Directory contents:"
       ls -la
+      echo "Contents of hello directory:"
+      ls -la hello/
       echo "Attempting to upload artifact:"
-      buildkite-agent artifact upload hello
+      buildkite-agent artifact upload hello/hello
 
   - block: ":name_input: Enter your name"
     prompt: "Please enter your name"
@@ -53,11 +55,11 @@ steps:
   - label: ":golang: Run the program"
     command: |
       echo "Downloading artifact:"
-      buildkite-agent artifact download "hello" .
+      buildkite-agent artifact download "hello/hello" .
       echo "Making executable:"
-      chmod +x hello
+      chmod +x hello/hello
       echo "Running program:"
-      ./hello "$(buildkite-agent meta-data get users-name)"
+      ./hello/hello "$(buildkite-agent meta-data get users-name)"
 
   - wait
 
