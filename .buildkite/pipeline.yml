@@ -8,7 +8,7 @@ steps:
       echo "Contents of hello directory:"
       ls -la hello/
 
-  - label: ":docker: Build and debug"
+  - label: ":docker: Build and Upload"
     plugins:
       - docker#v3.7.0:
           image: "golang:1.18.0"
@@ -21,19 +21,11 @@ steps:
               "/bin/sh",
               "-c",
               "
-              echo 'Current directory:' &&
-              pwd &&
-              echo 'Directory contents:' &&
-              ls -la &&
-              echo 'Contents of hello directory:' &&
-              ls -la hello/ &&
-              echo 'Attempting to build:' &&
               cd hello &&
-              go build -v &&
-              echo 'Contents of hello directory after build:' &&
-              ls -la &&
-              echo 'Uploading artifact:' &&
-              buildkite-agent artifact upload hello
+              go build -v -o hello &&
+              mkdir -p artifact &&
+              mv hello_executable artifact/ &&
+              buildkite-agent artifact upload 'artifact/**/*'
               ",
             ]
 
@@ -46,12 +38,18 @@ steps:
 
   - label: ":golang: Run the program"
     command: |
+      echo "Current directory:"
+      pwd
+      echo "Directory contents before download:"
+      ls -la
       echo "Downloading artifact:"
-      buildkite-agent artifact download "hello" .
+      buildkite-agent artifact download 'artifact/*' .
+      echo "Directory contents after download:"
+      ls -la artifact/
       echo "Making executable:"
-      chmod +x hello
+      chmod +x artifact/hello
       echo "Running program:"
-      ./hello "$(buildkite-agent meta-data get users-name)"
+      ./artifact/hello_executable "$(buildkite-agent meta-data get users-name)"
 
   - wait
 
