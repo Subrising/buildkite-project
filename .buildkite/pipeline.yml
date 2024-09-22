@@ -1,4 +1,7 @@
 steps:
+  - label: ":mag: List directory contents"
+    command: ls -R
+
   - label: ":docker: Build and upload"
     plugins:
       - docker#v5.7.0:
