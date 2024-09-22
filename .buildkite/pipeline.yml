@@ -24,7 +24,7 @@ steps:
               cd hello &&
               go build -v -o hello &&
               mkdir -p artifact &&
-              mv hello_executable artifact/ &&
+              mv hello artifact/ &&
               buildkite-agent artifact upload 'artifact/**/*'
               ",
             ]
