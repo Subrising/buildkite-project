@@ -45,8 +45,8 @@ steps:
 
   - label: ":golang: Run program"
     command: |
-      buildkite-agent artifact download "hello/hello" .
-      chmod +x hello/hello
+      buildkite-agent artifact download "hello" .
+      chmod +x hello
       ./hello "$(buildkite-agent meta-data get users-name)"
 
   - wait
