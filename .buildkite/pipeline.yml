@@ -42,8 +42,17 @@ steps:
       ls -la
       echo "Contents of hello directory:"
       ls -la hello/
+      echo "Searching for executable:"
+      find . -type f -executable
       echo "Attempting to upload artifact:"
-      buildkite-agent artifact upload hello/hello
+      EXECUTABLE=$(find . -type f -executable | grep hello)
+      if [ -n "$EXECUTABLE" ]; then
+        echo "Found executable: $EXECUTABLE"
+        buildkite-agent artifact upload "$EXECUTABLE"
+      else
+        echo "No executable found"
+        exit 1
+      fi
 
   - block: ":name_input: Enter your name"
     prompt: "Please enter your name"
@@ -54,12 +63,17 @@ steps:
 
   - label: ":golang: Run the program"
     command: |
-      echo "Downloading artifact:"
-      buildkite-agent artifact download "hello/hello" .
-      echo "Making executable:"
-      chmod +x hello/hello
-      echo "Running program:"
-      ./hello/hello "$(buildkite-agent meta-data get users-name)"
+      echo "Searching for downloaded artifact:"
+      find . -type f -name "*hello*"
+      echo "Attempting to run the program:"
+      EXECUTABLE=$(find . -type f -name "*hello*")
+      if [ -n "$EXECUTABLE" ]; then
+        chmod +x "$EXECUTABLE"
+        "$EXECUTABLE" "$(buildkite-agent meta-data get users-name)"
+      else
+        echo "Executable not found"
+        exit 1
+      fi
 
   - wait
 
