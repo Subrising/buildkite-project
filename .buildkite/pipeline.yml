@@ -15,13 +15,15 @@ steps:
           workdir: /go/src/app
           volumes:
             - .:/go/src/app
+          environment:
+            - BUILDKITE_AGENT_ACCESS_TOKEN
           command: [
               "/bin/sh",
               "-c",
               "
-              echo 'Current directory (in Docker):' &&
+              echo 'Current directory:' &&
               pwd &&
-              echo 'Directory contents (in Docker):' &&
+              echo 'Directory contents:' &&
               ls -la &&
               echo 'Contents of hello directory:' &&
               ls -la hello/ &&
@@ -30,29 +32,10 @@ steps:
               go build -v &&
               echo 'Contents of hello directory after build:' &&
               ls -la &&
-              echo 'Build complete'
+              echo 'Uploading artifact:' &&
+              buildkite-agent artifact upload hello
               ",
             ]
-
-  - label: ":arrow_up: Upload artifact"
-    command: |
-      echo "Current directory:"
-      pwd
-      echo "Directory contents:"
-      ls -la
-      echo "Contents of hello directory:"
-      ls -la hello/
-      echo "Searching for executable:"
-      find . -type f -executable
-      echo "Attempting to upload artifact:"
-      EXECUTABLE=$(find . -type f -executable | grep hello)
-      if [ -n "$EXECUTABLE" ]; then
-        echo "Found executable: $EXECUTABLE"
-        buildkite-agent artifact upload "$EXECUTABLE"
-      else
-        echo "No executable found"
-        exit 1
-      fi
 
   - block: ":name_input: Enter your name"
     prompt: "Please enter your name"
@@ -63,17 +46,12 @@ steps:
 
   - label: ":golang: Run the program"
     command: |
-      echo "Searching for downloaded artifact:"
-      find . -type f -name "*hello*"
-      echo "Attempting to run the program:"
-      EXECUTABLE=$(find . -type f -name "*hello*")
-      if [ -n "$EXECUTABLE" ]; then
-        chmod +x "$EXECUTABLE"
-        "$EXECUTABLE" "$(buildkite-agent meta-data get users-name)"
-      else
-        echo "Executable not found"
-        exit 1
-      fi
+      echo "Downloading artifact:"
+      buildkite-agent artifact download "hello" .
+      echo "Making executable:"
+      chmod +x hello
+      echo "Running program:"
+      ./hello "$(buildkite-agent meta-data get users-name)"
 
   - wait
 
