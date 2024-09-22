@@ -70,23 +70,40 @@ steps:
   - label: ":memo: Display report"
     key: display
     command: |
+      echo "Buildkite agent version:"
+      buildkite-agent --version
+
       echo "Waiting for artifact to become available..."
       sleep 10
-      echo "Listing available artifacts:"
-      buildkite-agent artifact search
+
+      echo "Retrieving report name:"
+      REPORT_NAME=$(buildkite-agent meta-data get "report-name")
+      echo "Report name: $REPORT_NAME"
+
+      echo "Listing all artifacts:"
+      buildkite-agent artifact search "*"
 
       echo "Attempting to download report:"
       for i in {1..5}; do
-        if buildkite-agent artifact download "report.txt" .; then
+        if buildkite-agent artifact download "$REPORT_NAME" .; then
           echo "Report downloaded successfully"
-          echo "Report contents:"
-          cat report.txt
-          exit 0
+          if [ -f "$REPORT_NAME" ]; then
+            echo "Report contents:"
+            cat "$REPORT_NAME"
+            exit 0
+          else
+            echo "Report file not found after download"
+          fi
         else
-          echo "Attempt $i: Failed to download report, retrying in 5 seconds..."
-          sleep 5
+          echo "Attempt $i: Failed to download report"
         fi
+        echo "Retrying in 5 seconds..."
+        sleep 5
       done
 
       echo "Failed to download report after 5 attempts"
+      echo "Current directory contents:"
+      ls -la
+      echo "Environment variables:"
+      env | sort
       exit 1
