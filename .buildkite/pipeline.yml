@@ -5,13 +5,13 @@ steps:
   - label: ":docker: Build and upload"
     plugins:
       - docker#v5.7.0:
-          image: "golang:1.18.0"
-          workdir: /hello
+          image: "golang:1.21.0"
+          workdir: /app
           volumes:
-            - .:/hello
-          command: ["go", "build", "-o", "hello/hello", "."]
+            - .:/app
+          command: ["sh", "-c", "go build -o hello && ls -la"]
     artifact_paths:
-      - "hello/hello"
+      - "hello"
 
   - block: ":name_input: Enter your name"
     prompt: "Please enter your name"
@@ -24,7 +24,7 @@ steps:
     command: |
       buildkite-agent artifact download "hello/hello" .
       chmod +x hello/hello
-      ./hello/hello "$(buildkite-agent meta-data get users-name)"
+      ./hello "$(buildkite-agent meta-data get users-name)"
 
   - wait
 
