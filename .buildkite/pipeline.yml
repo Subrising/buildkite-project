@@ -1,15 +1,34 @@
 steps:
-  - label: ":mag: List directory contents"
-    command: ls -R
+  - label: ":mag: List directory contents (on agent)"
+    command: |
+      echo "Current directory (on agent):"
+      pwd
+      echo "Directory contents (on agent):"
+      ls -la
 
   - label: ":docker: Build and upload"
     plugins:
       - docker#v5.7.0:
           image: "golang:1.21.0"
-          workdir: /app
+          workdir: /go/src/app
           volumes:
-            - .:/app
-          command: ["sh", "-c", "go build -o hello && ls -la"]
+            - .:/go/src/app
+          command: [
+              "/bin/sh",
+              "-c",
+              "
+              echo 'Current directory (in Docker):' &&
+              pwd &&
+              echo 'Directory contents (in Docker):' &&
+              ls -la &&
+              echo 'Go environment:' &&
+              go env &&
+              echo 'Attempting to build:' &&
+              go build -v -o hello &&
+              echo 'Build complete, directory contents:' &&
+              ls -la
+              ",
+            ]
     artifact_paths:
       - "hello"
 
