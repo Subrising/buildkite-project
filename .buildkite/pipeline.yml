@@ -64,10 +64,29 @@ steps:
     artifact_paths:
       - "report.txt"
 
+  - wait: ~
+    continue_on_failure: true
+
   - label: ":memo: Display report"
     key: display
     command: |
-      echo "Downloading report:"
-      buildkite-agent artifact download report.txt .
-      echo "Report contents:"
-      cat report.txt
+      echo "Waiting for artifact to become available..."
+      sleep 10
+      echo "Listing available artifacts:"
+      buildkite-agent artifact search
+
+      echo "Attempting to download report:"
+      for i in {1..5}; do
+        if buildkite-agent artifact download "report.txt" .; then
+          echo "Report downloaded successfully"
+          echo "Report contents:"
+          cat report.txt
+          exit 0
+        else
+          echo "Attempt $i: Failed to download report, retrying in 5 seconds..."
+          sleep 5
+        fi
+      done
+
+      echo "Failed to download report after 5 attempts"
+      exit 1
