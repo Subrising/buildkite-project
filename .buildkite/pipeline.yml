@@ -49,7 +49,7 @@ steps:
       echo "Making executable:"
       chmod +x artifact/hello
       echo "Running program:"
-      ./artifact/hello_executable "$(buildkite-agent meta-data get users-name)"
+      ./artifact/hello "$(buildkite-agent meta-data get users-name)"
 
   - wait
 
