@@ -33,8 +33,15 @@ steps:
               ls -la
               ",
             ]
-    artifact_paths:
-      - "hello"
+
+  - label: ":arrow_up: Upload artifact"
+    command: |
+      echo "Current directory:"
+      pwd
+      echo "Directory contents:"
+      ls -la
+      echo "Attempting to upload artifact:"
+      buildkite-agent artifact upload hello
 
   - block: ":name_input: Enter your name"
     prompt: "Please enter your name"
@@ -43,10 +50,13 @@ steps:
         key: "users-name"
         required: true
 
-  - label: ":golang: Run program"
+  - label: ":golang: Run the program"
     command: |
+      echo "Downloading artifact:"
       buildkite-agent artifact download "hello" .
+      echo "Making executable:"
       chmod +x hello
+      echo "Running program:"
       ./hello "$(buildkite-agent meta-data get users-name)"
 
   - wait
