@@ -29,6 +29,11 @@ steps:
               ",
             ]
 
+  - wait
+
+  - block: ":raised_hand: Manual Approval"
+    prompt: "Ready to proceed with input and execution?"
+
   - block: ":name_input: Enter your name"
     prompt: "Please enter your name"
     fields:
@@ -58,3 +63,11 @@ steps:
       echo "Program execution completed for user: $(buildkite-agent meta-data get users-name)" > report.txt
     artifact_paths:
       - "report.txt"
+
+  - label: ":memo: Display report"
+    key: display
+    command: |
+      echo "Downloading report:"
+      buildkite-agent artifact download report.txt .
+      echo "Report contents:"
+      cat report.txt
