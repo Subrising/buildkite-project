@@ -4,12 +4,12 @@ steps:
       echo "Current directory (on agent):"
       pwd
       echo "Directory contents (on agent):"
-      ls -la
+      ls -la hello/
 
   - label: ":docker: Build and upload"
     plugins:
-      - docker#v5.7.0:
-          image: "golang:1.21.0"
+      - docker#v3.7.0:
+          image: "golang:1.18.0"
           workdir: /go/src/app
           volumes:
             - .:/go/src/app
@@ -21,10 +21,14 @@ steps:
               pwd &&
               echo 'Directory contents (in Docker):' &&
               ls -la &&
+              echo 'Contents of hello directory:' &&
+              ls -la hello/ &&
               echo 'Go environment:' &&
               go env &&
               echo 'Attempting to build:' &&
-              go build -v -o hello &&
+              cd hello &&
+              go build -v -o ../hello &&
+              cd .. &&
               echo 'Build complete, directory contents:' &&
               ls -la
               ",
