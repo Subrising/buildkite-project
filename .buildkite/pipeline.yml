@@ -61,48 +61,38 @@ steps:
   - label: ":chart_with_upwards_trend: Generate report"
     key: report
     commands: |
-      echo "Generating report..."
-      export REPORT_NAME="report_$(date +%s).txt"
-      echo "Report name: $REPORT_NAME && report_$(date +%s).txt"
+      cat << 'EOT' | bash
+        set -euo pipefail
 
-      echo "Retrieving user name from metadata..."
-      USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
-      echo `User name retrieved: $USERS_NAME && $(buildkite-agent meta-data get "users-name")`
+        echo "Generating report..."
+        REPORT_NAME="report_$(date +%s).txt"
+        echo "Report name: $REPORT_NAME"
 
-      echo "Creating report file..."
-      echo "Program executed successfully for user: $USERS_NAME" > "$REPORT_NAME"
+        echo "Retrieving user name from metadata..."
+        USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
+        echo "User name retrieved: $USERS_NAME"
 
-      echo "Checking if report file was created..."
-      if [ -f "$REPORT_NAME" ]; then
-          echo "Report file created successfully";
-          echo "Report contents:";
-          cat "$REPORT_NAME";
+        echo "Creating report file..."
+        echo "Program executed successfully for user: $USERS_NAME" > "$REPORT_NAME"
+
+        echo "Checking if report file was created..."
+        if [ -f "$REPORT_NAME" ]; then
+          echo "Report file created successfully"
+          echo "Report contents:"
+          cat "$REPORT_NAME"
         else
-          echo "Error: Failed to create report file";
-          echo "Current directory contents:";
-          ls -la;
-          exit 1;
+          echo "Error: Failed to create report file"
+          echo "Current directory contents:"
+          ls -la
+          exit 1
         fi
 
-      echo "Uploading report..."
-      if buildkite-agent artifact upload "$REPORT_NAME"; then
-          echo "Report uploaded successfully";
-        else
-          echo "Error: Failed to upload report";
-          echo "Buildkite agent version:";
-          buildkite-agent --version;
-          exit 1;
-        fi
+        echo "Uploading report..."
+        buildkite-agent artifact upload "$REPORT_NAME"
 
-      echo "Setting report name in metadata..."
-      if buildkite-agent meta-data set "report-name" "$REPORT_NAME"; then
-          echo "Report name set in metadata successfully";
-        else
-          echo "Error: Failed to set report name in metadata";
-          echo "Buildkite agent version:";
-          buildkite-agent --version;
-          exit 1;
-        fi
+        echo "Setting report name in metadata..."
+        buildkite-agent meta-data set "report-name" "$REPORT_NAME"
+      EOT
 
   - wait: ~
     continue_on_failure: true
