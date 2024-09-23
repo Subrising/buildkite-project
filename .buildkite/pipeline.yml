@@ -66,7 +66,7 @@ steps:
       - echo `Report name: $REPORT_NAME`
 
       - echo "Retrieving user name from metadata..."
-      - USER_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
+      - USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
       - echo `User name retrieved: $USERS_NAME && $(buildkite-agent meta-data get "users-name")`
 
       - echo "Creating report file..."
