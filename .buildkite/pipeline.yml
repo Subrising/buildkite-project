@@ -63,7 +63,7 @@ steps:
     commands: |
       - echo "Generating report..."
       - export REPORT_NAME="report_$(date +%s).txt"
-      - echo `Report name: $REPORT_NAME && report_$(date +%s).txt`
+      - echo "Report name: $REPORT_NAME && report_$(date +%s).txt"
 
       - echo "Retrieving user name from metadata..."
       - USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
