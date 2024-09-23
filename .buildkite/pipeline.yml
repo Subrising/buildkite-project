@@ -65,21 +65,21 @@ steps:
         set -euo pipefail
 
         echo "Generating report..."
-        REPORT_NAME="report_$(date +%s).txt"
-        echo "Report name: $REPORT_NAME"
+        export REPORT_NAME="report_$(date +%s).txt"
+        echo "Report name: $$REPORT_NAME"
 
         echo "Retrieving user name from metadata..."
-        USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
-        echo "User name retrieved: $USERS_NAME"
+        export USERS_NAME=$$(buildkite-agent meta-data get "users-name")
+        echo "User name retrieved: $$USERS_NAME"
 
         echo "Creating report file..."
-        echo "Program executed successfully for user: $USERS_NAME" > "$REPORT_NAME"
+        echo "Program executed successfully for user: $$USERS_NAME" > "$$REPORT_NAME"
 
         echo "Checking if report file was created..."
-        if [ -f "$REPORT_NAME" ]; then
+        if [ -f "$$REPORT_NAME" ]; then
           echo "Report file created successfully"
           echo "Report contents:"
-          cat "$REPORT_NAME"
+          cat "$$REPORT_NAME"
         else
           echo "Error: Failed to create report file"
           echo "Current directory contents:"
@@ -88,10 +88,10 @@ steps:
         fi
 
         echo "Uploading report..."
-        buildkite-agent artifact upload "$REPORT_NAME"
+        buildkite-agent artifact upload "$$REPORT_NAME"
 
         echo "Setting report name in metadata..."
-        buildkite-agent meta-data set "report-name" "$REPORT_NAME"
+        buildkite-agent meta-data set "report-name" "$$REPORT_NAME"
       EOT
 
   - wait: ~
