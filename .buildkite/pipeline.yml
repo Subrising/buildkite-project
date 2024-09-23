@@ -63,12 +63,36 @@ steps:
     command: |
       echo "Generating report..."
       REPORT_NAME="report_$(date +%s).txt"
-      echo "Program executed successfully for user: $(buildkite-agent meta-data get users-name)" > "$REPORT_NAME"
+      echo "Report name: $REPORT_NAME"
+
+      USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
+      echo "User name retrieved: $USERS_NAME"
+
+      echo "Program executed successfully for user: $USERS_NAME" > "$REPORT_NAME"
+
+      if [ ! -f "$REPORT_NAME" ]; then
+        echo "Error: Failed to create report file"
+        exit 1
+      fi
+
       echo "Report contents:"
       cat "$REPORT_NAME"
+
       echo "Uploading report..."
-      buildkite-agent artifact upload "$REPORT_NAME"
-      buildkite-agent meta-data set "report-name" "$REPORT_NAME"
+      if buildkite-agent artifact upload "$REPORT_NAME"; then
+        echo "Report uploaded successfully"
+      else
+        echo "Error: Failed to upload report"
+        exit 1
+      fi
+
+      echo "Setting report name in metadata..."
+      if buildkite-agent meta-data set "report-name" "$REPORT_NAME"; then
+        echo "Report name set in metadata successfully"
+      else
+        echo "Error: Failed to set report name in metadata"
+        exit 1
+      fi
 
   - wait: ~
     continue_on_failure: true
