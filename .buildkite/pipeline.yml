@@ -61,28 +61,36 @@ steps:
   - label: ":chart_with_upwards_trend: Generate report"
     key: report
     command: |
-      echo "Generating report..."
+      echo 'Generating report...'
       REPORT_NAME="report_$(date +%s).txt"
       echo "Report name: $REPORT_NAME"
 
-      USERS_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
-      echo "User name retrieved: $USERS_NAME"
+      echo 'Retrieving user name from metadata...'
+      USER_NAME=$(buildkite-agent meta-data get "users-name" || echo "Unknown User")
+      echo "User name retrieved: $USER_NAME"
 
+      echo "Creating report file..."
       echo "Program executed successfully for user: $USERS_NAME" > "$REPORT_NAME"
 
-      if [ ! -f "$REPORT_NAME" ]; then
+      echo "Checking if report file was created..."
+      if [ -f "$REPORT_NAME" ]; then
+        echo "Report file created successfully"
+        echo "Report contents:"
+        cat "$REPORT_NAME"
+      else
         echo "Error: Failed to create report file"
+        echo "Current directory contents:"
+        ls -la
         exit 1
       fi
-
-      echo "Report contents:"
-      cat "$REPORT_NAME"
 
       echo "Uploading report..."
       if buildkite-agent artifact upload "$REPORT_NAME"; then
         echo "Report uploaded successfully"
       else
         echo "Error: Failed to upload report"
+        echo "Buildkite agent version:"
+        buildkite-agent --version
         exit 1
       fi
 
@@ -91,6 +99,8 @@ steps:
         echo "Report name set in metadata successfully"
       else
         echo "Error: Failed to set report name in metadata"
+        echo "Buildkite agent version:"
+        buildkite-agent --version
         exit 1
       fi
 
