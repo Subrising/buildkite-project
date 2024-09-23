@@ -86,3 +86,4 @@ Located in the `hello` directory, this simple application is the core of what th
 3. Explore Buildkite's plugin ecosystem for additional functionality.
 4. Implement caching mechanisms to speed up the build process.
 5. Add more sophisticated reporting, possibly integrating with external tools.
+6. Utilise the retry component of Buildkite to ensure that failed steps are retried.
